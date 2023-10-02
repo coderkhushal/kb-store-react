@@ -8,7 +8,8 @@ const secretstr="khushalisagoodboy"
 const fetchseller = require("../middleware/fetchseller")
 const product = require('../models/product');
 const multer  = require('multer')
-const upload = multer({dest: 'uploads/' })
+const file = require("../models/file")
+const fs = require("fs")
 
    //Route-1 signup using POST:/kbstore/seller/signup , no login required
 router.post("/signup",
@@ -143,8 +144,45 @@ router.delete("/deleteproduct/:id",async(req,res)=>{
         res.status(400).json({error:"Internal server error"})
     }
 })
+//setting up multer
+const storage= multer.diskStorage({
+    destination: (req, file,cb)=>{
 
-router.post('/image', upload.single('pdfs'), async (req, res, next) => {
-    console.log(req.file)
+        //get the user id from request
+        const userid= req.seller._id;
+        const userfolderpath= `uploads/${userid}`
+
+        //create the user folder if it does not exists
+        if(!fs.existsSync(userfolderpath)){
+            fs.mkdirSync(userfolderpath, {recursive:true})
+        }
+
+        cb(null, userfolderpath)//setting the destination folder for uploaded files
+    },
+    //using the original file name
+    filename:(req,file,cb)=>{
+        cb(null, file.originalname)
+    }
+})
+
+const upload= multer({storage});
+//Uploading file and saving in backend
+router.post('/upload',[fetchseller,upload.single('file')], async (req, res, next) => {
+    try{if(!req.file){
+        res.status(400).send("No file uploaded")
+    }
+
+    const {originalname , filename, size , mimetype}= req.file
+
+    const File = await file.create({
+        originalname: originalname,
+        filename:filename,
+        size:size,
+        mimetype:mimetype
+    })
+    res.json({success:true, message:"file uploaded and saved to database"})}
+    catch(err){
+        res.json({success:false, message:err})
+    }
 })
 module.exports = router
