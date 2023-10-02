@@ -1,7 +1,6 @@
 {
   "name": "kbstore-backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,5 +20,6 @@
     "mongodb": "^6.1.0",
     "mongoose": "^7.4.2",
     "multer": "^1.4.5-lts.1"
-  }
+  },
+  "description": ""
 }
